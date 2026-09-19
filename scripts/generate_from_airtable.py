@@ -420,6 +420,7 @@ def page_shell(slug, title, description, body_html, schema=None, breadcrumb=None
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{esc(title)}</title>
+<meta name="google-site-verification" content="Zm8rUHDS_EffoluHuIbreulEjK4y8wek20QiN7TyTIE" />
 <meta name="description" content="{esc(description)}">
 <link rel="canonical" href="{canonical}">
 <meta property="og:type" content="website">
