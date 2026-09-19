@@ -54,6 +54,7 @@ TABLES = {
     "proses": "CMS - Proses Kerja",
     "faq": "CMS - FAQ Layanan",
     "tim": "CMS - Tim",
+    "sosmed": "CMS - Sosial Media",
 }
 
 WA_FALLBACK = "https://wa.me/6285117732474"
@@ -141,6 +142,9 @@ footer { background: var(--yellow-accent); color: #000; padding: 50px 0 30px; bo
 footer h4 { font-weight: 700; margin-bottom: 16px; color: #000; }
 footer a.footlink { color: #000; text-decoration: none; display:block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem;}
 footer a.footlink:hover { text-decoration: underline; }
+.sosmed-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.sosmed-icon { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); }
+.sosmed-icon img { width: 100%; height: 100%; object-fit: cover; }
 .whatsapp-float { position: fixed; width: 60px; height: 60px; bottom: 30px; right: 30px; background-color: #25d366; color: #FFF; border-radius: 50px; text-align: center; font-size: 30px; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); z-index: 999; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
 .whatsapp-float:hover { transform: scale(1.1); background-color: #128c7e; }
 .whatsapp-icon { width: 34px; height: 34px; fill: white; }
@@ -216,6 +220,7 @@ artikel_rows = [r for r in airtable_get(TABLES["artikel"]) if field(r, "Status")
 proses_rows = airtable_get(TABLES["proses"])
 faq_rows = airtable_get(TABLES["faq"])
 tim_rows = sorted(airtable_get(TABLES["tim"]), key=lambda r: field(r, "Urutan", 9999) or 9999)
+sosmed_rows = sorted(airtable_get(TABLES["sosmed"]), key=lambda r: field(r, "Urutan", 9999) or 9999)
 
 # Foto tim asli yang sudah diupload ke repo, dipetakan dari Nama.
 # Dipakai HANYA kalau kolom "Foto" di Airtable kosong.
@@ -288,6 +293,24 @@ WHATSAPP_FLOAT = f"""<a href="{WA_LINK}" class="whatsapp-float" target="_blank" 
 FOOTER_LOGO_URL = attachment_url(footer_row, "Gambar", u("/logo.png"))
 FOOTER_TEXT = field(footer_row, "Paragraf / Deskripsi", "Yuk ngobrol! Kita siap jadi teman diskusi dan mitra digital kamu.")
 
+sosmed_html = ""
+if sosmed_rows:
+    icons = []
+    for s in sosmed_rows:
+        platform = field(s, "Platform")
+        link = field(s, "Link")
+        if not link:
+            continue
+        atts = field(s, "Logo", [])
+        logo = atts[0]["url"] if atts and isinstance(atts, list) and atts[0].get("url") else "https://placehold.co/40x40/1E293B/FFFFFF?text=%E2%80%A2"
+        icons.append(f'<a href="{link}" target="_blank" rel="noopener noreferrer" class="sosmed-icon" title="{esc(platform)}"><img src="{logo}" alt="{esc(platform)}"></a>')
+    if icons:
+        sosmed_html = f'<div class="sosmed-row">{"".join(icons)}</div>'
+    else:
+        sosmed_html = '<p style="font-size:0.85rem;color:#000;">Link sosial media akan segera hadir.</p>'
+else:
+    sosmed_html = '<p style="font-size:0.85rem;color:#000;">Link sosial media akan segera hadir.</p>'
+
 FOOTER = f"""<footer id="kontak">
     <div class="container">
         <div class="footer-grid">
@@ -305,8 +328,7 @@ FOOTER = f"""<footer id="kontak">
             </div>
             <div>
                 <h4>Ikuti Kami</h4>
-                {"<a class='footlink' href='" + field(kontak,'Instagram') + "' target='_blank' rel='noopener noreferrer'>Instagram</a>" if field(kontak, "Instagram") else ""}
-                {"<a class='footlink' href='" + field(kontak,'Facebook') + "' target='_blank' rel='noopener noreferrer'>Facebook</a>" if field(kontak, "Facebook") else ""}
+                {sosmed_html}
             </div>
         </div>
         <div class="footer-bottom">
