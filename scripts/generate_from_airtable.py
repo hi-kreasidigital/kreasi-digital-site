@@ -215,6 +215,31 @@ def rows_for_page(rows, halaman_name):
     filtered.sort(key=lambda r: field(r, "Urutan", 9999) or 9999)
     return filtered
 
+# Nama file gambar asli yang sudah kamu upload ke repo, dipetakan dari slug
+# studi kasus. Dipakai HANYA kalau kolom "Gambar Cover" di Airtable kosong.
+# Kalau kamu tambah studi kasus baru: upload fotonya lewat kolom "Gambar
+# Cover" di Airtable (paling gampang), ATAU tambahkan baris baru di sini.
+FALLBACK_COVER_BY_SLUG = {
+    "studi-kasus-tattoo-in-bali": "tattoo-in-bali.jpg",
+    "studi-kasus-pride-on": "pride-on.jpg",
+    "studi-kasus-bali-island-driver": "bali-island-driver.jpg",
+    "studi-kasus-aussie-souvenirs": "aussie-souvenirs.jpg",
+    "studi-kasus-nota-pos": "nota-pos.jpg",
+    "studi-kasus-outreach-cafe-malang": "outreach-cafe.jpg",
+    "studi-kasus-rekap-warga": "rekap-warga.jpg",
+}
+
+
+def cover_for(rec, slug, title):
+    """Prioritas: 1) attachment di Airtable, 2) file asli yang sudah diupload
+    ke repo, 3) placeholder otomatis (kalau dua-duanya tidak ada)."""
+    atts = field(rec, "Gambar Cover", [])
+    if atts and isinstance(atts, list) and atts[0].get("url"):
+        return atts[0]["url"]
+    if slug in FALLBACK_COVER_BY_SLUG:
+        return u("/" + FALLBACK_COVER_BY_SLUG[slug])
+    return f"https://placehold.co/600x400/F8FAFC/1E293B?text={urllib.parse.quote(title)}"
+
 WA_LINK = f"https://wa.me/{re.sub(r'[^0-9]', '', field(kontak, 'Nomor WhatsApp', '6285117732474'))}"
 EMAIL = field(kontak, "Email", "hi.kreasi.digital@gmail.com")
 NAMA_BISNIS = field(kontak, "Nama Bisnis", "Kreasi Digital")
@@ -222,7 +247,7 @@ NAMA_BISNIS = field(kontak, "Nama Bisnis", "Kreasi Digital")
 header_row = pengaturan_rows.get("header", {"fields": {}})
 footer_row = pengaturan_rows.get("footer", {"fields": {}})
 
-LOGO_URL = attachment_url(header_row, "Gambar", "logo.png")
+LOGO_URL = attachment_url(header_row, "Gambar", u("/logo.png"))
 NAV_WA_TEXT = field(header_row, "Teks Tombol", "Chat via WhatsApp")
 
 WHATSAPP_SVG = """<svg class="whatsapp-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3 18.6-68.1-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>"""
@@ -245,7 +270,7 @@ NAV = f"""<header>
 
 WHATSAPP_FLOAT = f"""<a href="{WA_LINK}" class="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="Chat via WhatsApp">{WHATSAPP_SVG}</a>"""
 
-FOOTER_LOGO_URL = attachment_url(footer_row, "Gambar", "logo.png")
+FOOTER_LOGO_URL = attachment_url(footer_row, "Gambar", u("/logo.png"))
 FOOTER_TEXT = field(footer_row, "Paragraf / Deskripsi", "Yuk ngobrol! Kita siap jadi teman diskusi dan mitra digital kamu.")
 
 FOOTER = f"""<footer id="kontak">
@@ -392,7 +417,7 @@ for r in studi_kasus_rows:
     solusi = field(r, "Solusi Kreasi Digital")
     hasil_lines = [l for l in field(r, "Hasil / Dampak").split("\n") if l.strip()]
     link_asli = field(r, "Link Website Asli")
-    cover = attachment_url(r, "Gambar Cover", "og-cover.jpg")
+    cover = cover_for(r, slug, title)
 
     body = f"""<section style="padding-top:20px;">
   <div class="container article-body">
@@ -436,7 +461,7 @@ for r in artikel_rows:
     title = field(r, "Judul Artikel")
     ringkasan = field(r, "Ringkasan (Meta Description)")
     isi = field(r, "Isi Artikel")
-    cover = attachment_url(r, "Gambar Cover", "og-cover.jpg")
+    cover = cover_for(r, slug, title)
 
     body = f"""<section style="padding-top:20px;">
   <div class="container article-body">
@@ -522,7 +547,7 @@ index_body = f"""<section class="hero">
         <a href="{u('/blog.html')}" class="btn-outline">Baca Tips UMKM</a>
       </div>
     </div>
-    <div><img src="hero-illustration.png" alt="Ilustrasi {esc(NAMA_BISNIS)}" class="hero-illustration-img"></div>
+    <div><img src="{u('/hero-illustration.png')}" alt="Ilustrasi {esc(NAMA_BISNIS)}" class="hero-illustration-img"></div>
   </div>
 </section>
 <div class="banner-accent">
