@@ -53,6 +53,7 @@ TABLES = {
     "artikel": "CMS - Artikel Blog",
     "proses": "CMS - Proses Kerja",
     "faq": "CMS - FAQ Layanan",
+    "tim": "CMS - Tim",
 }
 
 WA_FALLBACK = "https://wa.me/6285117732474"
@@ -98,6 +99,12 @@ section { padding: 60px 0; }
 .section-tag { display: inline-block; background: var(--yellow-accent); color: #000; padding: 6px 18px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; margin-bottom: 12px; letter-spacing: 0.5px; text-transform: uppercase; }
 .section-title { font-size: 2.1rem; font-weight: 800; color: var(--text-main); }
 .story-card { background: var(--bg-white); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 40px; box-shadow: var(--shadow-md); }
+.team-box { display: flex; gap: 20px; margin-top: 24px; flex-wrap: wrap; }
+.team-member { flex: 1; min-width: 160px; background: var(--bg-light); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 20px; text-align: center; }
+.member-avatar { width: 90px; height: 90px; border-radius: 50%; margin: 0 auto 12px; overflow: hidden; box-shadow: var(--shadow-sm); }
+.member-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.member-name { font-weight: 700; color: var(--primary); }
+.member-role { font-size: 0.85rem; color: var(--text-muted); }
 .portfolio-grid, .service-grid, .article-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 28px; }
 .portfolio-card, .service-card, .article-card { background: var(--bg-white); border: 1px solid var(--border-light); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform 0.2s ease, box-shadow 0.2s ease; display: flex; flex-direction: column; }
 .portfolio-card:hover, .service-card:hover, .article-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
@@ -208,6 +215,14 @@ studi_kasus_rows = [r for r in airtable_get(TABLES["studi_kasus"]) if field(r, "
 artikel_rows = [r for r in airtable_get(TABLES["artikel"]) if field(r, "Status") == "Published"]
 proses_rows = airtable_get(TABLES["proses"])
 faq_rows = airtable_get(TABLES["faq"])
+tim_rows = sorted(airtable_get(TABLES["tim"]), key=lambda r: field(r, "Urutan", 9999) or 9999)
+
+# Foto tim asli yang sudah diupload ke repo, dipetakan dari Nama.
+# Dipakai HANYA kalau kolom "Foto" di Airtable kosong.
+FALLBACK_TEAM_PHOTO = {
+    "Tara": "tara.jpeg",
+    "Mattel": "mattel.jpeg",
+}
 
 
 def rows_for_page(rows, halaman_name):
@@ -537,6 +552,26 @@ hero = pengaturan_rows.get("hero-beranda", {"fields": {}})
 banner = pengaturan_rows.get("banner-quote", {"fields": {}})
 tentang = pengaturan_rows.get("tentang-kami", {"fields": {}})
 
+team_html = ""
+if tim_rows:
+    members = []
+    for t in tim_rows:
+        nama = field(t, "Nama")
+        peran = field(t, "Jabatan")
+        atts = field(t, "Foto", [])
+        if atts and isinstance(atts, list) and atts[0].get("url"):
+            foto = atts[0]["url"]
+        elif nama in FALLBACK_TEAM_PHOTO:
+            foto = u("/" + FALLBACK_TEAM_PHOTO[nama])
+        else:
+            foto = f"https://placehold.co/200x200/F8FAFC/1E293B?text={urllib.parse.quote(nama)}"
+        members.append(f"""<div class="team-member">
+  <div class="member-avatar"><img src="{foto}" alt="Foto {esc(nama)}"></div>
+  <div class="member-name">{esc(nama)}</div>
+  <div class="member-role">{esc(peran)}</div>
+</div>""")
+    team_html = f'<div class="team-box">{"".join(members)}</div>'
+
 index_body = f"""<section class="hero">
   <div class="container hero-grid">
     <div>
@@ -560,7 +595,7 @@ index_body = f"""<section class="hero">
   <div class="container">
     <div class="section-header"><span class="section-tag">Tentang {esc(NAMA_BISNIS)}</span>
       <h2 class="section-title">{esc(field(tentang, 'Judul'))}</h2></div>
-    <div class="story-card"><p style="color:var(--text-muted);">{esc(field(tentang, 'Paragraf / Deskripsi'))}</p></div>
+    <div class="story-card"><p style="color:var(--text-muted);">{esc(field(tentang, 'Paragraf / Deskripsi'))}</p>{team_html}</div>
   </div>
 </section>
 <section style="background:var(--bg-light);">
