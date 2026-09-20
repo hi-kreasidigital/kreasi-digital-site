@@ -778,4 +778,34 @@ for cfg in LAYANAN_CONFIG:
         f"{cfg['slug']}.html", f"{hero_title} | {NAMA_BISNIS}", cfg["meta_description"], body, schema,
     ))
 
+# ---------------------------------------------------------------------------
+# sitemap.xml & robots.txt -- di-generate otomatis dari daftar halaman yang
+# BENAR-BENAR baru saja ditulis, dan selalu pakai SITE_BASE_URL yang aktif.
+# Ini mencegah sitemap "nyasar" ke domain lama saat SITE_BASE_URL diganti
+# (misalnya waktu pindah dari GitHub Pages ke domain sendiri).
+# ---------------------------------------------------------------------------
+ALL_SLUGS = (
+    ["index.html", "blog.html"]
+    + [f"{cfg['slug']}.html" for cfg in LAYANAN_CONFIG]
+    + [f"{field(r, 'Slug URL')}.html" for r in studi_kasus_rows]
+    + [f"{field(r, 'Slug URL')}.html" for r in artikel_rows]
+)
+
+sitemap_entries = "\n".join(
+    f"  <url><loc>{SITE_BASE_URL}/{slug}</loc></url>" for slug in ALL_SLUGS
+)
+sitemap_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{sitemap_entries}
+</urlset>
+"""
+write_file("sitemap.xml", sitemap_xml)
+
+robots_txt = f"""User-agent: *
+Allow: /
+
+Sitemap: {SITE_BASE_URL}/sitemap.xml
+"""
+write_file("robots.txt", robots_txt)
+
 print(f"Selesai. {len(studi_kasus_rows)} studi kasus + {len(artikel_rows)} artikel + {len(LAYANAN_CONFIG)} halaman layanan diterbitkan.")
