@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.kreasidigital.id/sitemap.xml
+Sitemap: https://hi-kreasidigital.github.io/kreasi-digital-site/sitemap.xml
