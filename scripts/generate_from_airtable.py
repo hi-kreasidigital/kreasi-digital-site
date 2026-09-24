@@ -16,6 +16,10 @@ ENV VARS yang dibutuhkan (diisi sebagai GitHub Actions secrets):
 - AIRTABLE_BASE_ID  : ID base, contoh appTgtEPUl5kIRHvv
 - SITE_BASE_URL     : domain final situs, contoh https://www.kreasidigital.id
 
+ENV VAR opsional:
+- NEWSLETTER_WEBHOOK_URL : URL webhook Airtable Automation untuk form newsletter.
+  Kalau tidak diisi, dipakai nilai default di bawah (NEWSLETTER_WEBHOOK_URL).
+
 Script ini TIDAK menghapus halaman yang tidak dikenal -- ia hanya menulis ulang
 file-file yang memang jadi tanggung jawabnya (lihat MANAGED_FILES).
 """
@@ -34,10 +38,17 @@ REPO_ROOT = os.environ.get("REPO_ROOT", ".")
 # (contoh: username.github.io/nama-repo -> BASE_PATH="/nama-repo")
 BASE_PATH = os.environ.get("BASE_PATH", "").rstrip("/")
 
-# Supabase dipakai HANYA untuk menampung pendaftaran newsletter dari form publik.
-# Anon key aman dipajang di HTML publik SELAMA RLS dibatasi insert-only.
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
-SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
+# Newsletter: form publik mengirim ke webhook Airtable Automation
+# "Newsletter: simpan pendaftar dari website", yang lalu menyimpan email ke
+# tabel "CMS - Newsletter Subscribers". URL webhook ini memang akan terlihat di
+# HTML publik -- itu aman: URL ini HANYA bisa memicu automation tsb (menambah
+# pendaftar), tidak bisa membaca/mengubah/menghapus data apa pun di Airtable.
+# Kalau webhook diganti (misal automation dibuat ulang), update nilai di bawah
+# ATAU isi secret NEWSLETTER_WEBHOOK_URL. Kosongkan untuk menyembunyikan form.
+NEWSLETTER_WEBHOOK_URL = os.environ.get(
+    "NEWSLETTER_WEBHOOK_URL",
+    "https://hooks.airtable.com/workflows/v1/genericWebhook/appTgtEPUl5kIRHvv/wfl1Fy5OOp9d7I8Rz/wtr6q8E91WOTrCTcK",
+).strip()
 
 
 def u(path):
@@ -148,6 +159,7 @@ footer a.footlink:hover { text-decoration: underline; }
 .whatsapp-float { position: fixed; width: 60px; height: 60px; bottom: 30px; right: 30px; background-color: #25d366; color: #FFF; border-radius: 50px; text-align: center; font-size: 30px; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); z-index: 999; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
 .whatsapp-float:hover { transform: scale(1.1); background-color: #128c7e; }
 .whatsapp-icon { width: 34px; height: 34px; fill: white; }
+.nl-trap { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
 @media (max-width: 768px) {
     .nav-wrapper { flex-direction: column; gap: 16px; }
     .nav-links { width: 100%; justify-content: center; flex-wrap: wrap; gap: 12px; }
@@ -341,9 +353,20 @@ FOOTER = f"""<footer id="kontak">
 
 
 def newsletter_form(sumber_halaman):
-    """Form newsletter yang menulis ke Supabase (insert-only lewat anon key).
-    Kalau SUPABASE_URL/KEY belum diisi, form tidak dirender sama sekali."""
-    if not SUPABASE_URL or not SUPABASE_ANON_KEY:
+    """Form newsletter yang mengirim ke webhook Airtable Automation.
+
+    Catatan teknis:
+    - Dikirim sebagai form biasa (URLSearchParams) dengan mode 'no-cors'.
+      Webhook Airtable tidak mendukung CORS, jadi kiriman JSON diblokir browser;
+      format form biasa lolos tanpa preflight.
+    - Konsekuensi 'no-cors': browser tidak bisa membaca balasan Airtable, jadi
+      pesan sukses ditampilkan setelah kiriman berangkat. Cek duplikat, validasi
+      email, dan filter bot dilakukan di automation Airtable.
+    - Field 'website' adalah jebakan bot (disembunyikan dari pengunjung).
+      Kalau terisi, automation tidak menyimpan pendaftar.
+    Kalau NEWSLETTER_WEBHOOK_URL kosong, form tidak dirender sama sekali.
+    """
+    if not NEWSLETTER_WEBHOOK_URL:
         return ""
     return f"""<section style="background:var(--bg-light);">
   <div class="container" style="max-width:640px;text-align:center;">
@@ -351,48 +374,51 @@ def newsletter_form(sumber_halaman):
     <h2 class="section-title" style="font-size:1.6rem;margin-bottom:10px;">Dapat Tips Digitalisasi UMKM</h2>
     <p style="color:var(--text-muted);margin-bottom:20px;">Kami kirim artikel dan tips praktis sesekali saja. Tanpa spam.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
-      <input id="nl-email" type="email" placeholder="email@kamu.com" required
+      <input id="nl-email" type="email" placeholder="email@kamu.com" required autocomplete="email"
         style="flex:1;min-width:240px;padding:12px 18px;border-radius:30px;border:1px solid var(--border-light);font-family:inherit;font-size:1rem;">
+      <div class="nl-trap" aria-hidden="true">
+        <label for="nl-website">Jangan diisi</label>
+        <input id="nl-website" type="text" name="website" tabindex="-1" autocomplete="off">
+      </div>
       <button id="nl-btn" type="button" class="btn-cta" style="cursor:pointer;">Daftar</button>
     </div>
     <p id="nl-msg" style="margin-top:12px;font-size:0.9rem;color:var(--text-muted);"></p>
   </div>
   <script>
   (function() {{
+    var WEBHOOK = '{NEWSLETTER_WEBHOOK_URL}';
     var btn = document.getElementById('nl-btn');
     var input = document.getElementById('nl-email');
+    var trap = document.getElementById('nl-website');
     var msg = document.getElementById('nl-msg');
-    btn.addEventListener('click', function() {{
+    function daftar() {{
       var email = (input.value || '').trim();
-      if (!email || email.indexOf('@') === -1) {{
+      if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {{
         msg.textContent = 'Masukkan email yang valid ya.';
         return;
       }}
       btn.disabled = true;
       msg.textContent = 'Mendaftarkan...';
-      fetch('{SUPABASE_URL}/rest/v1/newsletter_subscribers', {{
+      fetch(WEBHOOK, {{
         method: 'POST',
-        headers: {{
-          'Content-Type': 'application/json',
-          'apikey': '{SUPABASE_ANON_KEY}',
-          'Authorization': 'Bearer {SUPABASE_ANON_KEY}',
-          'Prefer': 'return=minimal'
-        }},
-        body: JSON.stringify({{ email: email, sumber_halaman: '{sumber_halaman}' }})
-      }}).then(function(r) {{
-        if (r.ok) {{
-          msg.textContent = 'Makasih! Email kamu sudah terdaftar.';
-          input.value = '';
-        }} else if (r.status === 409) {{
-          msg.textContent = 'Email ini sudah terdaftar sebelumnya.';
-        }} else {{
-          msg.textContent = 'Maaf, ada kendala. Coba lagi nanti ya.';
-          btn.disabled = false;
-        }}
+        mode: 'no-cors',
+        body: new URLSearchParams({{
+          email: email,
+          sumber_halaman: '{sumber_halaman}',
+          website: trap.value || ''
+        }})
+      }}).then(function() {{
+        msg.textContent = 'Makasih! Email kamu sudah kami catat.';
+        input.value = '';
+        btn.disabled = false;
       }}).catch(function() {{
         msg.textContent = 'Maaf, ada kendala koneksi. Coba lagi nanti ya.';
         btn.disabled = false;
       }});
+    }}
+    btn.addEventListener('click', daftar);
+    input.addEventListener('keydown', function(e) {{
+      if (e.key === 'Enter') {{ e.preventDefault(); daftar(); }}
     }});
   }})();
   </script>
