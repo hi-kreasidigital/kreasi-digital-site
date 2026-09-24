@@ -1,5 +1,7 @@
 # Panduan Publish Situs Kreasi Digital (Gratis, Kecuali Domain)
 
+> **Catatan:** dokumen ini adalah catatan awal proyek. Untuk langkah setup yang paling baru dan lengkap (termasuk `BASE_PATH` dan newsletter), ikuti **`PANDUAN-PUBLISH.md`**. Bagian 1 di bawah (script `build.py`, `pages.py`, dll.) berasal dari versi sebelum auto-publish Airtable dan sudah tidak dipakai.
+
 ## 1. Sebelum upload
 - Ganti `BASE_URL` di `build.py` (sudah dipakai di semua canonical/OG/sitemap) dengan domain final kamu, lalu jalankan ulang `python3 pages.py && python3 case_studies.py && python3 blog.py` dan buat ulang `sitemap.xml`.
 - Taruh semua file gambar yang direferensikan (logo.png, hero-illustration.png, tara.jpeg, mattel.jpeg, tattoo-in-bali.jpg, pride-on.jpg, bali-island-driver.jpg, aussie-souvenirs.jpg, app-illustration.png, nota-pos.jpg, outreach-cafe.jpg, rekap-warga.jpg) di folder yang sama dengan file HTML ini (root repo). Tambahkan juga `og-cover.jpg` (1200x630px) untuk preview link di WhatsApp/social media.
@@ -39,7 +41,7 @@ Base Airtable "Kreasi Digital" sekarang punya 5 tabel baru berawalan **"CMS -"**
 - **CMS - Kontak** — satu baris data kontak resmi (email, WhatsApp, area layanan, Instagram, Facebook).
 - **CMS - Studi Kasus** — tambah baris baru di sini untuk menambah portofolio. Set **Status = Published** supaya tampil di situs.
 - **CMS - Artikel Blog** — tambah baris baru untuk artikel edukasi UMKM baru. Set **Status = Published** supaya tampil.
-- **CMS - Newsletter Subscribers** — kalau kamu pasang form newsletter Airtable (Airtable Forms, gratis) yang submit ke tabel ini, semua pendaftar otomatis tercatat di sini.
+- **CMS - Newsletter Subscribers** — semua pendaftar dari form newsletter di situs (Beranda & Blog) otomatis tercatat di sini lewat Airtable Automation **"Newsletter: simpan pendaftar dari website"**. Email ganda dan kiriman bot otomatis disaring. Cara setup-nya ada di `PANDUAN-PUBLISH.md` Tahap 3.
 - **CMS - Proses Kerja** — langkah-langkah "cara kami bekerja" di tiap halaman layanan (kolom Halaman menentukan tampil di halaman mana, Urutan menentukan posisinya). Sudah saya isi 4 langkah standar untuk tiap halaman — tinggal ubah teksnya atau tambah/kurangi baris.
 - **CMS - FAQ Layanan** — pertanyaan & jawaban per halaman layanan, sama seperti di atas pakai kolom Halaman + Urutan. Sudah saya isi 3 FAQ untuk tiap halaman layanan.
 
@@ -51,14 +53,15 @@ Supaya ini jalan otomatis tiap kamu update Airtable, sudah disiapkan **GitHub Ac
 
 **Setup sekali saja (sekitar 10 menit):**
 1. Buka https://airtable.com/create/tokens, buat **Personal Access Token** baru dengan scope `data.records:read`, akses ke base "Kreasi Digital" saja.
-2. Di repo GitHub kamu, buka **Settings → Secrets and variables → Actions**, tambahkan 3 secret:
+2. Di repo GitHub kamu, buka **Settings → Secrets and variables → Actions**, tambahkan 4 secret:
    - `AIRTABLE_API_KEY` — token dari langkah 1
    - `AIRTABLE_BASE_ID` — `appTgtEPUl5kIRHvv`
-   - `SITE_BASE_URL` — domain final kamu, misal `https://www.kreasidigital.id`
+   - `SITE_BASE_URL` — URL situs lengkap tanpa garis miring di akhir, misal `https://hi-kreasidigital.github.io/kreasi-digital-site` (nanti `https://www.kreasidigital.id` setelah pakai domain sendiri)
+   - `BASE_PATH` — `/nama-repo` selama masih pakai URL GitHub Pages gratis (misal `/kreasi-digital-site`); kosongkan setelah pindah ke domain sendiri
 3. Pastikan file `scripts/generate_from_airtable.py` dan `.github/workflows/rebuild.yml` ada di root repo (folder `.github/workflows/` harus persis seperti itu).
 4. Selesai — sekarang tiap kamu tambah/edit baris di Airtable (dan set Status = Published), dalam ±15 menit halamannya otomatis muncul di situs, lengkap dengan meta description unik.
 
 **Batasan yang masih ada:**
 - Bagian "Yang Kamu Dapatkan" (daftar fitur) dan kalimat pembuka tiap halaman layanan masih statis di kode (bukan permintaan awal untuk dieditkan) — kalau nanti mau itu juga full-editable, tinggal minta lagi.
 - Gambar yang di-upload lewat kolom "Gambar" di Airtable akan memakai link dari server Airtable. Ini praktis, tapi kalau suatu saat ingin lebih permanen, gambar bisa dipindah ke folder repo dan direferensikan langsung.
-- Newsletter: tabel penampung sudah ada, tapi form-nya perlu kamu buat sendiri di Airtable (Airtable Forms, gratis, tinggal share link atau embed) karena menyambungkan form custom di HTML ke Airtable memerlukan API key yang sebaiknya tidak taruh di halaman publik.
+- Newsletter: form custom di situs sudah tersambung ke Airtable **tanpa** menaruh token Airtable di halaman publik — form mengirim ke webhook Airtable Automation, dan URL webhook itu hanya bisa menambah pendaftar. Karena webhook Airtable tidak mendukung CORS, form tidak bisa membaca balasan Airtable, jadi pesan sukses selalu tampil setelah kiriman berangkat. Yang belum ada: alur untuk benar-benar mengirim newsletter ke para subscriber.
