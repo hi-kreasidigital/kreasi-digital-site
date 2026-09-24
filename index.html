@@ -103,6 +103,7 @@ footer a.footlink:hover { text-decoration: underline; }
 .whatsapp-float { position: fixed; width: 60px; height: 60px; bottom: 30px; right: 30px; background-color: #25d366; color: #FFF; border-radius: 50px; text-align: center; font-size: 30px; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); z-index: 999; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
 .whatsapp-float:hover { transform: scale(1.1); background-color: #128c7e; }
 .whatsapp-icon { width: 34px; height: 34px; fill: white; }
+.nl-trap { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
 @media (max-width: 768px) {
     .nav-wrapper { flex-direction: column; gap: 16px; }
     .nav-links { width: 100%; justify-content: center; flex-wrap: wrap; gap: 12px; }
@@ -223,48 +224,51 @@ footer a.footlink:hover { text-decoration: underline; }
     <h2 class="section-title" style="font-size:1.6rem;margin-bottom:10px;">Dapat Tips Digitalisasi UMKM</h2>
     <p style="color:var(--text-muted);margin-bottom:20px;">Kami kirim artikel dan tips praktis sesekali saja. Tanpa spam.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
-      <input id="nl-email" type="email" placeholder="email@kamu.com" required
+      <input id="nl-email" type="email" placeholder="email@kamu.com" required autocomplete="email"
         style="flex:1;min-width:240px;padding:12px 18px;border-radius:30px;border:1px solid var(--border-light);font-family:inherit;font-size:1rem;">
+      <div class="nl-trap" aria-hidden="true">
+        <label for="nl-website">Jangan diisi</label>
+        <input id="nl-website" type="text" name="website" tabindex="-1" autocomplete="off">
+      </div>
       <button id="nl-btn" type="button" class="btn-cta" style="cursor:pointer;">Daftar</button>
     </div>
     <p id="nl-msg" style="margin-top:12px;font-size:0.9rem;color:var(--text-muted);"></p>
   </div>
   <script>
   (function() {
+    var WEBHOOK = 'https://hooks.airtable.com/workflows/v1/genericWebhook/appTgtEPUl5kIRHvv/wfl1Fy5OOp9d7I8Rz/wtr6q8E91WOTrCTcK';
     var btn = document.getElementById('nl-btn');
     var input = document.getElementById('nl-email');
+    var trap = document.getElementById('nl-website');
     var msg = document.getElementById('nl-msg');
-    btn.addEventListener('click', function() {
+    function daftar() {
       var email = (input.value || '').trim();
-      if (!email || email.indexOf('@') === -1) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         msg.textContent = 'Masukkan email yang valid ya.';
         return;
       }
       btn.disabled = true;
       msg.textContent = 'Mendaftarkan...';
-      fetch('https://covzwmxwezomgwshatjy.supabase.co/rest/v1/newsletter_subscribers', {
+      fetch(WEBHOOK, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvdnp3bXh3ZXpvbWd3c2hhdGp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4MTQ1NjQsImV4cCI6MjEwNTM5MDU2NH0._EpDxQLSNphCnGmCivu-xf7Q65OEUzLIaE4p1gXcHGA',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvdnp3bXh3ZXpvbWd3c2hhdGp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4MTQ1NjQsImV4cCI6MjEwNTM5MDU2NH0._EpDxQLSNphCnGmCivu-xf7Q65OEUzLIaE4p1gXcHGA',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({ email: email, sumber_halaman: 'Beranda' })
-      }).then(function(r) {
-        if (r.ok) {
-          msg.textContent = 'Makasih! Email kamu sudah terdaftar.';
-          input.value = '';
-        } else if (r.status === 409) {
-          msg.textContent = 'Email ini sudah terdaftar sebelumnya.';
-        } else {
-          msg.textContent = 'Maaf, ada kendala. Coba lagi nanti ya.';
-          btn.disabled = false;
-        }
+        mode: 'no-cors',
+        body: new URLSearchParams({
+          email: email,
+          sumber_halaman: 'Beranda',
+          website: trap.value || ''
+        })
+      }).then(function() {
+        msg.textContent = 'Makasih! Email kamu sudah kami catat.';
+        input.value = '';
+        btn.disabled = false;
       }).catch(function() {
         msg.textContent = 'Maaf, ada kendala koneksi. Coba lagi nanti ya.';
         btn.disabled = false;
       });
+    }
+    btn.addEventListener('click', daftar);
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); daftar(); }
     });
   })();
   </script>
