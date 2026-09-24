@@ -3,10 +3,9 @@
 Urutannya penting — ikuti dari atas ke bawah. Total sekitar 30–45 menit.
 
 Peran tiap layanan:
-- **Airtable** — tempat kamu edit semua konten (artikel, studi kasus, teks section, kontak)
+- **Airtable** — tempat kamu edit semua konten (artikel, studi kasus, teks section, kontak), sekaligus tempat menampung pendaftar newsletter (lewat Airtable Automation)
 - **GitHub** — tempat file website disimpan, sekaligus mesin yang build ulang situs otomatis
 - **GitHub Pages** — hosting gratis situsnya
-- **Supabase** — khusus menampung pendaftar newsletter dari form publik
 
 ---
 
@@ -22,7 +21,7 @@ Peran tiap layanan:
    - Kalau `.github/` tidak ikut ter-drag (kadang tersembunyi), lihat catatan di bawah.
 7. Klik **Commit changes**.
 
-**Kalau folder `.github/` tidak mau terupload:** di repo, klik **Add file → Create new file**, lalu ketik nama file persis: `.github/workflows/rebuild.yml` (GitHub otomatis bikin foldernya), paste isi file `rebuild.yml` dari zip, lalu commit.
+**Kalau folder `.github/` tidak mau terupload:** di repo, klik **Add file → Create new file**, lalu ketik nama file persis: `.github/workflows/rebuild.yml` (GitHub otomatis bikin foldernya), paste isi file `rebuild.yml` dari zip, lalu commit. (Di macOS, folder berawalan titik disembunyikan Finder — tekan `Cmd+Shift+.` untuk menampilkannya.)
 
 8. **Upload gambar-gambar kamu.** File gambar lama (logo.png, hero-illustration.png, foto portofolio) tidak ada di zip. Upload semuanya ke root repo dengan cara yang sama, pakai nama file yang sama seperti sebelumnya.
 
@@ -38,25 +37,43 @@ Peran tiap layanan:
 
 Base ID kamu sudah diketahui: `appTgtEPUl5kIRHvv`
 
+**Token ini JANGAN pernah ditaruh di HTML atau file publik mana pun.** Token hanya disimpan sebagai GitHub Secret (Tahap 4) dan dipakai GitHub Actions untuk membaca konten saat build.
+
 ---
 
-## TAHAP 3 — Setup Supabase untuk newsletter
+## TAHAP 3 — Setup newsletter (Airtable Automation + webhook)
 
-1. Buka https://supabase.com → **Start your project** → login dengan GitHub.
-2. **New project**:
-   - Name: `kreasi-digital`
-   - Database password: bikin password kuat, simpan (tidak dipakai di website, tapi perlu untuk akses DB)
-   - Region: **Southeast Asia (Singapore)** — paling dekat ke Indonesia
-   - Plan: **Free**
-3. Tunggu project selesai dibuat (~2 menit).
-4. Buka menu kiri **SQL Editor** → **New query**.
-5. Buka file `supabase-setup.sql` dari zip, **copy seluruh isinya**, paste ke editor, klik **Run**.
-   - Harus muncul "Success. No rows returned". Kalau error, screenshot errornya.
-6. Buka **Project Settings** (ikon gerigi) → **API**. Catat dua hal:
-   - **Project URL** → contoh `https://abcdefgh.supabase.co`
-   - **anon public** key → string panjang diawali `eyJ...`
+Form newsletter di situs mengirim email pendaftar ke **webhook** milik sebuah Airtable Automation. Automation itu lalu menyimpan pendaftar ke tabel **CMS - Newsletter Subscribers**.
 
-**Kenapa anon key aman dipajang publik?** Karena SQL di langkah 5 mengaktifkan Row Level Security dan hanya memberi izin INSERT. Dengan anon key, orang cuma bisa mendaftarkan email — tidak bisa membaca, mengubah, atau menghapus daftar subscriber kamu.
+> **Sudah pernah disetup?** Automation **"Newsletter: simpan pendaftar dari website"** (ID `wfl1Fy5OOp9d7I8Rz`) sudah ada dan aktif di base `appTgtEPUl5kIRHvv`, dan URL webhook-nya sudah tertanam di `scripts/generate_from_airtable.py`. Tahap ini hanya perlu diulang kalau automation-nya terhapus atau kamu membuat base baru.
+
+**Kenapa URL webhook aman dipajang di HTML publik?** URL itu hanya bisa memicu automation tersebut (menambah pendaftar). URL itu tidak bisa membaca, mengubah, atau menghapus data apa pun di Airtable — berbeda dengan token Airtable, yang tidak boleh dipajang.
+
+**Kenapa tidak langsung menulis ke Airtable dari form?** Itu butuh token Airtable di HTML publik, dan izin token berlaku untuk seluruh base (termasuk tabel CMS) — siapa pun bisa mengubah isi situs.
+
+### Membuat automation dari nol
+
+1. Buka base di Airtable → tab **Automations** → **Create automation**. Beri nama `Newsletter: simpan pendaftar dari website`.
+2. **Trigger**: pilih **When webhook received**. Salin **URL webhook** yang muncul.
+3. **Kirim data contoh** supaya Airtable tahu bentuk datanya. Buka aplikasi **Terminal** di Mac, lalu jalankan (ganti `URL_WEBHOOK`):
+   ```
+   curl -X POST -d "email=tes@contoh.com&sumber_halaman=Beranda&website=" URL_WEBHOOK
+   ```
+   Kembali ke Airtable, klik **Test trigger**. Harus muncul field `email`, `sumber_halaman`, dan `website`.
+4. **Action 1 — Find records**: tabel **CMS - Newsletter Subscribers**, kondisi **Email** *is* `email` dari trigger. (Gunanya mengecek email ganda.)
+5. **Action 2 — Conditional group** dengan kondisi (semua harus terpenuhi):
+   - `website` dari trigger **is empty** (field jebakan bot — pengunjung manusia tidak melihatnya, bot biasanya mengisinya)
+   - `email` dari trigger **contains** `@`
+   - hasil **Find records** (daftar record ID) **is empty** (email belum terdaftar)
+6. Di dalam kondisi itu, tambahkan **Create record** di tabel **CMS - Newsletter Subscribers**:
+   - **Email** → `email` dari trigger (idealnya diubah ke huruf kecil & tanpa spasi)
+   - **Tanggal Daftar** → waktu automation berjalan
+   - **Sumber Halaman** → `sumber_halaman` dari trigger
+7. Nyalakan toggle automation menjadi **On**.
+8. Jalankan lagi perintah `curl` di langkah 3. Dalam beberapa detik, baris `tes@contoh.com` harus muncul di tabel. Kalau sudah, hapus baris tes itu.
+9. **Pasang URL webhook di skrip**: buka `scripts/generate_from_airtable.py`, cari `NEWSLETTER_WEBHOOK_URL`, lalu ganti URL default di situ dengan URL webhook yang baru. Commit.
+
+**Catatan teknis penting (jangan diubah tanpa alasan kuat):** webhook Airtable **tidak mendukung CORS**. Karena itu form di situs mengirim data sebagai **form biasa** (`URLSearchParams`) dengan mode `no-cors`. Kiriman JSON akan diblokir browser, dan kiriman teks biasa (`text/plain`) ditolak Airtable. Konsekuensinya, browser tidak bisa membaca balasan Airtable — pesan "Makasih!" tampil setelah kiriman berangkat, sedangkan cek duplikat dan filter bot dilakukan di automation.
 
 ---
 
@@ -72,12 +89,14 @@ Tambahkan satu per satu (nama harus persis):
 | `AIRTABLE_BASE_ID` | `appTgtEPUl5kIRHvv` |
 | `SITE_BASE_URL` | `https://USERNAME.github.io/kreasi-digital` |
 | `BASE_PATH` | `/kreasi-digital` |
-| `SUPABASE_URL` | Project URL dari Tahap 3 |
-| `SUPABASE_ANON_KEY` | anon public key dari Tahap 3 |
 
 Ganti `USERNAME` dengan username GitHub kamu, dan `kreasi-digital` dengan nama repo kamu kalau berbeda.
 
 **`BASE_PATH` itu penting.** Karena URL gratis GitHub Pages berbentuk `username.github.io/nama-repo/`, semua link internal harus diberi awalan nama repo. Tanpa ini, semua menu dan tombol di situs akan mengarah ke halaman 404.
+
+**`SITE_BASE_URL` harus sudah menyertakan nama repo** (contoh `https://USERNAME.github.io/kreasi-digital`, tanpa garis miring di akhir). Nilai ini dipakai langsung untuk canonical URL dan `sitemap.xml`.
+
+**URL webhook newsletter tidak perlu dijadikan secret** — sudah tertulis di skrip (Tahap 3 langkah 9). Secret `NEWSLETTER_WEBHOOK_URL` hanya opsional untuk menimpa nilai itu; kalau dipakai, pastikan `rebuild.yml` juga meneruskannya ke skrip di bagian `env`.
 
 ---
 
@@ -128,13 +147,21 @@ Saat domain sudah dibeli, cuma 4 langkah:
    - `BASE_PATH` → **kosongkan isinya** (hapus nilainya, simpan sebagai string kosong)
 4. Jalankan ulang workflow (Actions → Run workflow). Semua link internal dan canonical URL otomatis menyesuaikan.
 
+Form newsletter tidak perlu diubah saat pindah domain — webhook Airtable menerima kiriman dari domain mana pun.
+
 Setelah itu, daftarkan ulang domain baru di Google Search Console sebagai property terpisah.
 
 ---
 
 ## Cek hasil & troubleshooting
 
-**Cek newsletter jalan:** buka halaman Beranda atau Blog situsmu, masukkan email uji, klik Daftar. Lalu cek di Supabase → **Table Editor** → `newsletter_subscribers`. Emailnya harus muncul di situ.
+**Cek newsletter jalan:** buka halaman Beranda atau Blog situsmu, masukkan email uji, klik Daftar. Lalu cek tabel **CMS - Newsletter Subscribers** di Airtable. Emailnya harus muncul dalam beberapa detik, lengkap dengan tanggal dan sumber halaman.
+
+**Pendaftar newsletter tidak masuk ke Airtable?** Cek berurutan:
+1. Automation **"Newsletter: simpan pendaftar dari website"** masih **On**.
+2. Riwayat run automation (Automations → buka automation → run history). Kalau tidak ada run sama sekali, kiriman tidak sampai ke webhook.
+3. Situs sudah memakai form versi terbaru: klik kanan di halaman → **View Page Source** → cari `hooks.airtable.com`. Kalau tidak ketemu, workflow belum jalan ulang setelah skrip diubah, atau browser masih menyimpan versi lama (coba jendela Incognito).
+4. Email yang sama didaftarkan dua kali memang sengaja tidak disimpan ulang.
 
 **Semua link 404?** `BASE_PATH` salah atau belum diisi. Nilainya harus `/nama-repo` persis, diawali garis miring, tanpa garis miring di akhir.
 
