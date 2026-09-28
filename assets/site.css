@@ -26,6 +26,10 @@ ul, ol { margin: 0; padding: 0; }
 :focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; border-radius: 6px; }
 .hl { background: linear-gradient(transparent 58%, var(--yellow) 58%); padding: 0 .08em; }
 
+/* Ilustrasi antara "Untuk siapa" dan "Cara kami bekerja" */
+.illu-band { padding: 48px 0 0; }
+.illu-band img { display: block; width: 100%; max-width: 420px; height: auto; margin: 0 auto; }
+
 /* Buttons */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: inherit; font-weight: 700; font-size: .95rem; padding: 12px 22px; border-radius: 999px; text-decoration: none; border: 2px solid transparent; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease, background .15s ease; line-height: 1.2; text-align: center; }
 .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
@@ -221,7 +225,7 @@ a:hover .text-link svg { transform: translateX(3px); }
 .footer-about img { height: 56px; width: auto; margin-bottom: 14px; }
 .footer-about p { font-weight: 500; }
 .site-footer .small { font-size: .9rem; }
-.site-footer h4 { font-size: 1rem; margin-bottom: 12px; color: var(--ink); }
+.site-footer h4 { font-size: 1.25rem; font-weight: 800; margin-bottom: 14px; color: var(--ink); }
 .site-footer ul { list-style: none; display: grid; gap: 8px; }
 .site-footer a { color: var(--ink); font-weight: 600; text-decoration: none; font-size: .92rem; }
 .site-footer a:hover { text-decoration: underline; }
@@ -256,6 +260,8 @@ a:hover .text-link svg { transform: translateX(3px); }
   .footer-about { grid-column: 1 / -1; }
 }
 @media (max-width: 640px) {
+  .illu-band { padding-top: 32px; }
+  .illu-band img { max-width: 280px; }
   .section { padding: 56px 0; }
   .problem-grid, .case-grid, .steps, .link-list { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr; }
