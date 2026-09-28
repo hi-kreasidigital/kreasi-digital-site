@@ -97,6 +97,7 @@ FALLBACK_CASE_IMAGE = {
 FALLBACK_TEAM_PHOTO = {"Tara": "/assets/img/team-tara.webp", "Mattel": "/assets/img/team-mattel.webp"}
 LOGO = "/assets/img/logo.png"
 HERO_IMG = "/assets/img/hero-illustration.webp"
+APP_ILLU_IMG = "/assets/img/app-illustration.webp"
 OG_IMAGE = "/assets/img/og-cover.jpg"
 
 # URL lama (website v2) -> URL baru. Halaman pengalihan dibuat otomatis.
@@ -548,7 +549,7 @@ def footer(lang):
       <img src="{u(LOGO)}" alt="{esc(NAMA)}" width="68" height="60">
       <p>{esc(T("footer.text", lang))}</p>
       <p class="small"><strong>{esc(T("footer.area", lang))}:</strong> {esc(area)}<br>
-      <a href="mailto:{esc(EMAIL)}">{esc(EMAIL)}</a> · <a href="{wa_link(lang)}" target="_blank" rel="noopener">WhatsApp</a></p>
+      <strong>Email:</strong> <a href="mailto:{esc(EMAIL)}">{esc(EMAIL)}</a></p>
     </div>
     <div><h4>{esc(T("footer.col_solusi", lang))}</h4><ul>{sol}<li><a href="{u(route("solusi", lang))}">{esc(T("nav.solusi", lang))} →</a></li></ul></div>
     <div><h4>{esc(T("footer.col_untuk", lang))}</h4><ul>{aud}</ul><h4 style="margin-top:22px">{esc(T("footer.col_sosmed", lang))}</h4>{soc}</div>
@@ -708,6 +709,9 @@ def page_home(lang):
 <section class="section tint" id="untuk"><div class="container">
   {section_head(T("sec.untuk.tag", lang), T("sec.untuk.h2", lang))}
   <div class="aud-grid">{"".join(aud_cards)}</div>
+</div></section>
+<section class="illu-band"><div class="container">
+  <img src="{u(APP_ILLU_IMG)}" alt="{esc(T("illu.alt", lang))}" width="900" height="843" loading="lazy">
 </div></section>
 <section class="section" id="proses"><div class="container">
   {section_head(T("sec.proses.tag", lang), T("sec.proses.h2", lang))}

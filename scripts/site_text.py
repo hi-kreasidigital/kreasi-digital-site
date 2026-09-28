@@ -63,6 +63,7 @@ DEFAULT_TEXT = {
     "sec.untuk.tag": ("Untuk siapa", "Who we help", "Beranda - Section", ""),
     "sec.untuk.h2": ("Solusi digital untuk UMKM, yayasan, dan organisasi",
                      "Digital solutions for small businesses, foundations and organizations", "Beranda - Section", ""),
+    "illu.alt": ("Ilustrasi tim bekerja sama membangun aplikasi", "Illustration of a team building an app together", "Beranda - Section", "Teks alternatif gambar di antara 'Untuk siapa' dan 'Cara kami bekerja'"),
     "sec.proses.tag": ("Cara kami bekerja", "How we work", "Beranda - Section", ""),
     "sec.proses.h2": ("Kami mulai dari masalah bisnis Anda, bukan dari produk kami",
                       "We start with your business problem, not with our product", "Beranda - Section", ""),
