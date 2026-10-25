@@ -534,15 +534,17 @@ def footer(lang):
                   for m in MASALAH[:6] if path_masalah(m, lang))
     aud = "".join(f'<li><a href="{u(path_audiens(a, lang))}">{esc(FL(a, "Nama", lang))}</a></li>'
                   for a in AUDIENS if path_audiens(a, lang))
-    icons = []
-    for s in SOSMED:
-        link = F(s, "Link")
-        if not link:
-            continue
-        logo = localize_attachment(s, "Logo", "")
-        inner = f'<img src="{u(logo)}" alt="" width="20" height="20">' if logo else esc(F(s, "Platform")[:2])
-        icons.append(f'<a href="{esc(link)}" target="_blank" rel="noopener" class="soc" aria-label="{esc(F(s, "Platform"))}">{inner}</a>')
-    soc = f'<div class="soc-row">{"".join(icons)}</div>' if icons else f'<p class="muted-dark">{esc(T("footer.sosmed_kosong", lang))}</p>'
+    # Ikuti Kami: Instagram & TikTok. Kalau kolom Link di tabel Sosial Media kosong -> "Segera hadir".
+    links = {F(r, "Platform").strip().lower(): F(r, "Link") for r in SOSMED if F(r, "Platform")}
+    soon = T("footer.segera", lang)
+    items = []
+    for name in ("Instagram", "TikTok"):
+        link = links.get(name.lower())
+        if link:
+            items.append(f'<li><a href="{esc(link)}" target="_blank" rel="noopener">{name}</a></li>')
+        else:
+            items.append(f'<li><span class="soc-name">{name}</span> <span class="soon">{esc(soon)}</span></li>')
+    soc = f'<ul class="soc-list">{"".join(items)}</ul>'
     area = FL(KONTAK, "Area Layanan", lang)
     return f"""<footer class="site-footer"><div class="container">
   <div class="footer-grid">
@@ -711,17 +713,14 @@ def page_home(lang):
   {section_head(T("sec.untuk.tag", lang), T("sec.untuk.h2", lang))}
   <div class="aud-grid">{"".join(aud_cards)}</div>
 </div></section>
-<section class="illu-band"><div class="container">
-  <img src="{u(APP_ILLU_IMG)}" alt="{esc(T("illu.alt", lang))}" width="900" height="843" loading="lazy">
-</div></section>
-<section class="section" id="proses"><div class="container">
+<section class="section ocean" id="proses"><div class="container">
   {section_head(T("sec.proses.tag", lang), T("sec.proses.h2", lang))}
   <ol class="steps">{steps}</ol>
 </div></section>
-<section class="section tint" id="tentang"><div class="container about-grid">
+<section class="section" id="tentang"><div class="container about-grid">
   <div>{section_head(T("sec.kenapa.tag", lang), T("sec.kenapa.h2", lang), center=False)}
     <p class="lead-sm">{esc(T("sec.kenapa.p", lang))}</p><ul class="ticks">{poin}</ul></div>
-  <div class="team">{team}</div>
+  <div class="about-art"><img src="{u(APP_ILLU_IMG)}" alt="{esc(T("illu.alt", lang))}" width="900" height="843" loading="lazy"></div>
 </div></section>
 <section class="section" id="studi-kasus"><div class="container">
   {section_head(T("sec.studi.tag", lang), T("sec.studi.h2", lang))}
