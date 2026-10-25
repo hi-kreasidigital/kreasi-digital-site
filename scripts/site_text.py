@@ -155,6 +155,7 @@ DEFAULT_TEXT = {
     "footer.col_solusi": ("Masalah yang Kami Selesaikan", "Problems We Solve", "Footer", ""),
     "footer.col_untuk": ("Untuk Siapa", "Who We Help", "Footer", ""),
     "footer.col_sosmed": ("Ikuti Kami", "Follow Us", "Footer", ""),
+    "footer.segera": ("Segera hadir", "Coming soon", "Footer", "Label di samping Instagram/TikTok selama link belum diisi."),
     "footer.sosmed_kosong": ("Link sosial media akan segera hadir.", "Social media links coming soon.", "Footer", ""),
     "footer.tagline": ("Dibuat dengan sepenuh hati untuk para pemilik usaha.", "Built with care for hardworking business owners.", "Footer", ""),
 
