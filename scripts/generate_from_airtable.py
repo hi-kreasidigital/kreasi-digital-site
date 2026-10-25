@@ -80,6 +80,7 @@ TABLES = {
     "faq": "FAQ",
     "proses": "Proses Kerja",
     "tim": "Tim",
+    "testimoni": "Testimoni",
     "kontak": "Kontak",
     "sosmed": "Sosial Media",
 }
@@ -92,6 +93,8 @@ FALLBACK_CASE_IMAGE = {
     "bali-island-driver": "/assets/img/case-bali-island-driver.webp",
     "aussie-souvenirs": "/assets/img/case-aussie-souvenirs.webp",
     "pride-on": "/assets/img/case-pride-on.webp",
+    "teman-pulih": "/assets/img/case-teman-pulih.webp",
+    "nourish-flow": "/assets/img/case-nourish-flow.webp",
     "tattoo-in-bali": "/assets/img/case-tattoo-in-bali.webp",
 }
 FALLBACK_TEAM_PHOTO = {"Tara": "/assets/img/team-tara.webp", "Mattel": "/assets/img/team-mattel.webp"}
@@ -112,7 +115,7 @@ LEGACY_REDIRECTS = {
     "studi-kasus-outreach-cafe-malang.html": "/studi-kasus/outreach-cafe-resto/",
     "studi-kasus-bali-island-driver.html": "/studi-kasus/bali-island-driver/",
     "studi-kasus-aussie-souvenirs.html": "/studi-kasus/aussie-souvenirs/",
-    "studi-kasus-pride-on.html": "/studi-kasus/pride-on/",
+    "studi-kasus-pride-on.html": "/studi-kasus/",
     "studi-kasus-tattoo-in-bali.html": "/studi-kasus/tattoo-in-bali/",
     "artikel-pentingnya-kasir-digital-umkm.html": "/blog/kasir-digital-untuk-umkm/",
     "artikel-tips-pilih-jasa-website-umkm-bali.html": "/blog/",
@@ -278,7 +281,18 @@ def slugify(s):
 # ---------------------------------------------------------------------------
 # Load data
 # ---------------------------------------------------------------------------
-RAW = {k: airtable_get(v) for k, v in TABLES.items()}
+def _safe_get(key, name):
+    # Tabel opsional (mis. Testimoni) tidak boleh menggagalkan build kalau belum ada.
+    if key != "testimoni":
+        return airtable_get(name)
+    try:
+        return airtable_get(name)
+    except Exception as e:  # noqa: BLE001
+        print(f"  ! tabel {name} tidak bisa dibaca ({e}); bagian testimoni disembunyikan")
+        return []
+
+
+RAW = {k: _safe_get(k, v) for k, v in TABLES.items()}
 
 TEXT_ROWS = {F(r, "Key"): r for r in RAW["teks"] if F(r, "Key")}
 
@@ -309,6 +323,7 @@ ARTIKEL = sorted(published(RAW["artikel"]), key=lambda r: F(r, "Tanggal Terbit",
 FAQ = sorted(RAW["faq"], key=order_key)
 PROSES = sorted(RAW["proses"], key=order_key)
 TIM = sorted(RAW["tim"], key=order_key)
+TESTIMONI = sorted(published(RAW["testimoni"]), key=order_key)
 SOSMED = sorted(RAW["sosmed"], key=order_key)
 MASALAH_AUDIENS = sorted(RAW["masalah_audiens"], key=order_key)
 
@@ -475,6 +490,31 @@ def cta_band(lang, title=None, text=None, btn=None, msg=None):
             f'{btn_wa(lang, btn or T("cta.btn", lang), msg, "btn btn-primary btn-lg")}</div></section>')
 
 
+def testimonials(lang, visible=3):
+    """Section Cerita Klien (latar ocean). Kartu ke-4 dst. tersembunyi sampai tombol diklik."""
+    rows = [t for t in TESTIMONI if FL(t, "Kutipan", lang)]
+    if not rows:
+        return ""
+    cards = []
+    for i, t in enumerate(rows):
+        nama = F(t, "Nama") or ""
+        inisial = "".join(w[0] for w in nama.split()[:2]).upper() or "?"
+        extra = ' data-extra' if i >= visible else ""
+        cards.append(f'<figure class="testi-card"{extra}><blockquote>&ldquo;{esc(FL(t, "Kutipan", lang))}&rdquo;</blockquote>'
+                     f'<figcaption><span class="testi-ava" aria-hidden="true">{esc(inisial)}</span>'
+                     f'<span><strong>{esc(nama)}</strong><span>{esc(FL(t, "Peran", lang))}</span></span></figcaption></figure>')
+    btn = ""
+    if len(rows) > visible:
+        more = T("testi.more", lang).replace("{n}", str(len(rows)))
+        btn = (f'<div class="testi-actions"><button type="button" class="btn btn-light testi-toggle" aria-expanded="false" '
+               f'aria-controls="testi-grid" data-more="{esc(more)}" data-less="{esc(T("testi.less", lang))}">{esc(more)}</button></div>')
+    return f"""<section class="section ocean testi" id="cerita"><div class="container">
+  {section_head(T("testi.tag", lang), T("testi.h2", lang))}
+  <div class="testi-grid" id="testi-grid">{"".join(cards)}</div>
+  {btn}
+</div></section>"""
+
+
 def newsletter(lang, source):
     if not NEWSLETTER_WEBHOOK_URL:
         return ""
@@ -507,7 +547,6 @@ def header(lang, alts):
         (route("untuk", lang), T("nav.untuk", lang)),
         (route("studi", lang), T("nav.studi", lang)),
         (route("blog", lang), T("nav.blog", lang)),
-        (route("home", lang) + "#tentang", T("nav.tentang", lang)),
     ]
     cur = ' aria-current="page"'
     act = ' class="active" aria-current="true"'
@@ -554,7 +593,7 @@ def footer(lang):
       <p class="small"><strong>{esc(T("footer.area", lang))}:</strong> {esc(area)}<br>
       <strong>Email:</strong> <a href="mailto:{esc(EMAIL)}">{esc(EMAIL)}</a></p>
     </div>
-    <div><h4>{esc(T("footer.col_solusi", lang))}</h4><ul>{sol}<li><a href="{u(route("solusi", lang))}">{esc(T("nav.solusi", lang))} →</a></li></ul></div>
+    <div><h4>{esc(T("footer.col_solusi", lang))}</h4><ul class="foot-lines">{sol}</ul></div>
     <div><h4>{esc(T("footer.col_untuk", lang))}</h4><ul>{aud}</ul><h4 style="margin-top:22px">{esc(T("footer.col_sosmed", lang))}</h4>{soc}</div>
   </div>
   <div class="footer-bottom"><span>&copy; {date.today().year} {esc(NAMA)}</span><span>{esc(T("footer.tagline", lang))}</span></div>
@@ -722,6 +761,7 @@ def page_home(lang):
     <p class="lead-sm">{esc(T("sec.kenapa.p", lang))}</p><ul class="ticks">{poin}</ul></div>
   <div class="about-art"><img src="{u(APP_ILLU_IMG)}" alt="{esc(T("illu.alt", lang))}" width="900" height="843" loading="lazy"></div>
 </div></section>
+{testimonials(lang)}
 <section class="section" id="studi-kasus"><div class="container">
   {section_head(T("sec.studi.tag", lang), T("sec.studi.h2", lang))}
   <div class="case-grid">{cases}</div>

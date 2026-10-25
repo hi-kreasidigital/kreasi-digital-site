@@ -77,7 +77,8 @@ a:hover .text-link svg { transform: translateX(3px); }
 .section { padding: clamp(56px, 8vw, 96px) 0; }
 .section.tint { background: var(--bg-soft); }
 .pt0 { padding-top: 0; }
-.section-head { max-width: 760px; margin-bottom: 36px; }
+.section-head { max-width: 1040px; margin-bottom: 36px; }
+.section-head .section-sub { max-width: 760px; }
 .section-head.center { margin-left: 0; margin-right: 0; text-align: left; }
 .section-title { font-size: clamp(1.6rem, 3.2vw, 2.4rem); }
 .small-title { font-size: 1.4rem; }
@@ -138,6 +139,19 @@ a:hover .text-link svg { transform: translateX(3px); }
 .section.ocean .section-title, .section.ocean .section-sub { color: #fff; }
 .section.ocean .hl { color: #fff; text-decoration: underline; text-decoration-color: var(--red); text-decoration-thickness: 3px; text-underline-offset: 5px; }
 .section.ocean .step { border-color: transparent; }
+
+/* Testimoni (latar ocean) */
+.testi-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.testi-card { margin: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 22px; padding: 24px; background: #fff; border-radius: var(--radius); }
+.testi-card blockquote { margin: 0; color: var(--navy); font-size: .96rem; line-height: 1.6; }
+.testi-card figcaption { display: flex; align-items: center; gap: 12px; }
+.testi-card figcaption strong { display: block; color: var(--navy); font-size: .9rem; }
+.testi-card figcaption span span { display: block; color: var(--muted); font-size: .8rem; }
+.testi-ava { flex: 0 0 40px; width: 40px; height: 40px; border-radius: 50%; background: var(--blue-soft); color: var(--ocean); display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: .8rem; }
+.testi.collapsed [data-extra] { display: none; }
+.testi-actions { margin-top: 28px; text-align: center; }
+.btn-light { background: #fff; color: var(--navy); }
+.btn-light:hover { background: var(--bg-soft); }
 
 /* About */
 .about-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 56px; align-items: center; }
@@ -250,6 +264,9 @@ a:hover .text-link svg { transform: translateX(3px); }
 .site-footer strong { color: #fff; }
 .site-footer h4 { font-size: .74rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 16px; color: #fff; }
 .site-footer ul { list-style: none; display: grid; gap: 9px; }
+.site-footer .foot-lines { gap: 0; }
+.site-footer .foot-lines li { border-bottom: 1px solid rgba(255,255,255,.35); }
+.site-footer .foot-lines a { display: block; padding: 10px 0; }
 .site-footer a { color: rgba(255,255,255,.82); font-weight: 500; text-decoration: none; font-size: .88rem; }
 .site-footer a:hover { color: #fff; text-decoration: underline; }
 .footer-bottom { margin-top: 44px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.14); display: flex; justify-content: center; flex-wrap: wrap; gap: 6px 18px; font-size: .8rem; color: rgba(255,255,255,.6); text-align: center; }
@@ -284,12 +301,13 @@ a:hover .text-link svg { transform: translateX(3px); }
   .hero-grid, .about-grid, .two-col, .nl-inner { grid-template-columns: 1fr; }
   .hero-art { max-width: 560px; }
   .aud-grid, .options { grid-template-columns: 1fr; }
+  .testi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .footer-about { grid-column: 1 / -1; }
 }
 @media (max-width: 640px) {
   .about-art img { max-width: 300px; }
-  .problem-grid, .case-grid, .steps, .link-list { grid-template-columns: 1fr; }
+  .problem-grid, .case-grid, .steps, .link-list, .testi-grid { grid-template-columns: 1fr; }
   .step::before { display: none; }
   .footer-grid { grid-template-columns: 1fr; }
   .btn-row .btn { width: 100%; }
