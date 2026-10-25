@@ -96,6 +96,7 @@ FALLBACK_CASE_IMAGE = {
 }
 FALLBACK_TEAM_PHOTO = {"Tara": "/assets/img/team-tara.webp", "Mattel": "/assets/img/team-mattel.webp"}
 LOGO = "/assets/img/logo.png"
+LOGO_WHITE = "/assets/img/logo-white.svg"  # logo putih untuk header & footer berlatar navy
 HERO_IMG = "/assets/img/hero-illustration.webp"
 APP_ILLU_IMG = "/assets/img/app-illustration.webp"
 OG_IMAGE = "/assets/img/og-cover.jpg"
@@ -519,7 +520,7 @@ def header(lang, alts):
                f'<a href="{u(alts.get("en") or route("home", "en"))}" hreflang="en" lang="en"{act if lang == "en" else ""}>EN</a></div>')
     return f"""<a class="skip" href="#main">{"Langsung ke isi" if lang == "id" else "Skip to content"}</a>
 <header class="site-header"><div class="container nav-wrap">
-  <a href="{u(route("home", lang))}" class="brand"><img src="{u(LOGO)}" alt="{esc(NAMA)}" width="68" height="60"></a>
+  <a href="{u(route("home", lang))}" class="brand"><img src="{u(LOGO_WHITE)}" alt="{esc(NAMA)}" width="80" height="48"></a>
   <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav"><span></span><span></span><span></span><span class="sr-only">Menu</span></button>
   <nav id="site-nav" class="site-nav"><ul>{items}</ul>
     {lang_sw}
@@ -546,7 +547,7 @@ def footer(lang):
     return f"""<footer class="site-footer"><div class="container">
   <div class="footer-grid">
     <div class="footer-about">
-      <img src="{u(LOGO)}" alt="{esc(NAMA)}" width="68" height="60">
+      <img src="{u(LOGO_WHITE)}" alt="{esc(NAMA)}" width="100" height="60">
       <p>{esc(T("footer.text", lang))}</p>
       <p class="small"><strong>{esc(T("footer.area", lang))}:</strong> {esc(area)}<br>
       <strong>Email:</strong> <a href="mailto:{esc(EMAIL)}">{esc(EMAIL)}</a></p>
@@ -624,7 +625,7 @@ def shell(lang, path, alts, title, description, body, schemas=(), crumbs=None, o
 <meta property="og:url" content="{canonical}">
 <meta property="og:image" content="{ogi}">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#FEBF23">
+<meta name="theme-color" content="#0F2A4A">
 <link rel="icon" href="{u(LOGO)}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
