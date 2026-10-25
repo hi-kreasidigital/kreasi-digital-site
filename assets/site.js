@@ -15,6 +15,18 @@
     });
   }
 
+  // Testimoni: kartu ke-4 dst. tersembunyi, tombol membuka ke bawah.
+  var testi = document.querySelector('.testi');
+  var tBtn = testi && testi.querySelector('.testi-toggle');
+  if (testi && tBtn) {
+    testi.classList.add('collapsed');
+    tBtn.addEventListener('click', function () {
+      var open = testi.classList.toggle('collapsed') === false;
+      tBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      tBtn.textContent = open ? tBtn.getAttribute('data-less') : tBtn.getAttribute('data-more');
+    });
+  }
+
   // Newsletter -> webhook Airtable Automation.
   // Webhook Airtable tidak mendukung CORS, jadi data dikirim sebagai form biasa
   // (URLSearchParams) dengan mode 'no-cors'. Balasan tidak bisa dibaca browser,
