@@ -300,7 +300,7 @@ main > section::before, main > section::after, .site-footer::before {
   background: no-repeat center / contain; opacity: .07;
 }
 main > section::before { top: 40px; right: 32px; transform: rotate(8deg); }
-main > section::after { bottom: 40px; left: 28px; transform: rotate(-6deg); }
+main > section::after { bottom: 40px; left: -56px; transform: rotate(-6deg); }
 .site-footer::before { bottom: 36px; right: 32px; transform: rotate(-8deg); opacity: .1; background-image: url('img/motifs/kemudi-white.svg'); }
 .section.ocean::before, .section.ocean::after, .promise::before, .promise::after, .cta-band::before, .cta-band::after { opacity: .1; }
 /* Halaman lain: motif bergantian */
@@ -309,7 +309,7 @@ main > section:nth-of-type(3n+2)::before { background-image: url('img/motifs/jan
 main > section:nth-of-type(3n)::before { background-image: url('img/motifs/kemudi-navy.svg'); }
 main > section.pt0::before { background-image: none; }
 main > section.page-hero::before { background-image: url('img/motifs/mercusuar-navy.svg'); }
-main > section.page-hero::after { background-image: url('img/motifs/ombak-navy.svg'); --ds: 150px; }
+main > section.page-hero::after { background-image: url('img/motifs/ombak-navy.svg'); --ds: 150px; left: auto; right: 240px; bottom: 12px; }
 main > section.cta-band::before { background-image: url('img/motifs/jangkar-white.svg'); top: auto; bottom: 24px; --ds: 180px; }
 main > section.newsletter::before { background-image: url('img/motifs/ombak-navy.svg'); --ds: 170px; }
 main > .section.ocean:nth-of-type(n)::before { background-image: url('img/motifs/kompas-white.svg'); }
@@ -358,7 +358,7 @@ main > #studi-kasus::before { background-image: url('img/motifs/mercusuar-navy.s
 @media (max-width: 640px) {
   main > section::before, main > section::after, .site-footer::before { width: calc(var(--ds, 210px) * .5); height: calc(var(--ds, 210px) * .5); }
   main > section::before { top: 16px; right: 8px; }
-  main > section::after { bottom: 16px; left: 8px; }
+  main > section::after { bottom: 16px; left: -28px; }
   .about-art img { max-width: 300px; }
   .problem-grid, .case-grid, .steps, .link-list, .testi-grid { grid-template-columns: 1fr; }
   .step::before { display: none; }
