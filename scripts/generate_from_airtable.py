@@ -103,6 +103,7 @@ LOGO_WHITE = "/assets/img/logo-white.svg"  # logo putih untuk header & footer be
 HERO_IMG = "/assets/img/hero-illustration.webp"
 APP_ILLU_IMG = "/assets/img/app-illustration.webp"
 OG_IMAGE = "/assets/img/og-cover.jpg"
+OG_IMAGE_EN = "/assets/img/og-cover-en.jpg"  # social card versi bahasa Inggris
 
 # URL lama (website v2) -> URL baru. Halaman pengalihan dibuat otomatis.
 LEGACY_REDIRECTS = {
@@ -647,7 +648,7 @@ def shell(lang, path, alts, title, description, body, schemas=(), crumbs=None, o
         f'<script type="application/ld+json">{json.dumps(s, ensure_ascii=False)}</script>' for s in schemas if s)
     gsv = f'<meta name="google-site-verification" content="{esc(GOOGLE_SITE_VERIFICATION)}">' if GOOGLE_SITE_VERIFICATION else ""
     robots = '<meta name="robots" content="noindex,follow">' if noindex else ""
-    ogi = abs_url(og_image or OG_IMAGE)
+    ogi = abs_url(og_image or (OG_IMAGE_EN if lang == "en" else OG_IMAGE))
     return f"""<!DOCTYPE html>
 <html lang="{HTML_LANG[lang]}">
 <head>
