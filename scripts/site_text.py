@@ -30,10 +30,10 @@ DEFAULT_TEXT = {
     "label.artikel": ("Artikel", "Article", "Menu & Umum", "Label kecil di kartu"),
 
     # ------------------------------------------------------------------ SEO Beranda
-    "home.title": ("Kreasi Digital Hub | Solusi Digital untuk Masalah Usahamu",
+    "home.title": ("Kreasi Digital Hub | Solusi Kustom untuk Masalah Bisnis Kamu",
                    "Kreasi Digital Hub | Digital Fixes for Your Business Problems",
                    "SEO Beranda", "Judul tab browser & hasil Google. Maks. 60 karakter."),
-    "home.meta": ("Pesanan tercecer, stok nggak cocok, data anggota berantakan? Kreasi Digital Hub bikin sistem, aplikasi, dan website sesuai masalah usahamu.",
+    "home.meta": ("Pesanan tercecer, stok nggak cocok, data anggota berantakan? Kreasi Digital Hub bikin sistem, aplikasi, dan website sesuai masalah bisnis kamu.",
                   "Missed orders, stock that never adds up, messy member data? Kreasi Digital Hub builds systems, apps and websites around your real business problems.",
                   "SEO Beranda", "Deskripsi di hasil Google. Maks. 155 karakter."),
 
