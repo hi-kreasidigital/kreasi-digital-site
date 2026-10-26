@@ -102,8 +102,8 @@ LOGO = "/assets/img/logo.png"
 LOGO_WHITE = "/assets/img/logo-white.svg"  # logo putih untuk header & footer berlatar navy
 HERO_IMG = "/assets/img/hero-illustration.webp"
 APP_ILLU_IMG = "/assets/img/app-illustration.webp"
-OG_IMAGE = "/assets/img/og-cover.jpg"
-OG_IMAGE_EN = "/assets/img/og-cover-en.jpg"  # social card versi bahasa Inggris
+OG_IMAGE = "/assets/img/og-card-2026.jpg"
+OG_IMAGE_EN = "/assets/img/og-card-2026-en.jpg"  # social card versi bahasa Inggris
 
 # URL lama (website v2) -> URL baru. Halaman pengalihan dibuat otomatis.
 LEGACY_REDIRECTS = {
