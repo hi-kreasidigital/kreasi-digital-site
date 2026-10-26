@@ -312,7 +312,7 @@ def T(key, lang):
 
 
 KONTAK = RAW["kontak"][0] if RAW["kontak"] else {"fields": {}}
-NAMA = F(KONTAK, "Nama Bisnis", "Kreasi Digital") or "Kreasi Digital"
+NAMA = F(KONTAK, "Nama Bisnis", "Kreasi Digital Hub") or "Kreasi Digital Hub"
 WA_NUMBER = re.sub(r"[^0-9]", "", F(KONTAK, "Nomor WhatsApp", "") or "6285117732474")
 EMAIL = F(KONTAK, "Email", "hi.kreasi.digital@gmail.com")
 
@@ -667,10 +667,10 @@ def shell(lang, path, alts, title, description, body, schemas=(), crumbs=None, o
 <meta property="og:image" content="{ogi}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0F2A4A">
-<link rel="icon" href="{u(LOGO)}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="{u('/assets/img/favicon.png')}">
+<link rel="apple-touch-icon" href="{u('/assets/img/favicon.png')}">
+<link rel="preload" href="{u('/assets/fonts/plus-jakarta-sans.woff2')}" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{u('/assets/fonts/dm-sans.woff2')}" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{u('/assets/site.css')}?v={CSS_VERSION}">
 {schema_html}
 </head>
@@ -758,7 +758,8 @@ def page_home(lang):
 </div></section>
 <section class="section" id="tentang"><div class="container about-grid">
   <div>{section_head(T("sec.kenapa.tag", lang), T("sec.kenapa.h2", lang), center=False)}
-    <p class="lead-sm">{esc(T("sec.kenapa.p", lang))}</p><ul class="ticks">{poin}</ul></div>
+    <p class="lead-sm">{esc(T("sec.kenapa.p", lang))}</p><ul class="ticks">{poin}</ul>
+    <div class="btn-row">{btn_wa(lang, T("sec.kenapa.cta", lang), None, "btn btn-primary btn-lg")}</div></div>
   <div class="about-art"><img src="{u(APP_ILLU_IMG)}" alt="{esc(T("illu.alt", lang))}" width="900" height="843" loading="lazy"></div>
 </div></section>
 {testimonials(lang)}
